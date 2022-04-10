@@ -127,6 +127,12 @@ vector<int> MBD(vector<int> individual) {
 vector<int> Crossover(const vector<int> &individual) {
 
 }
+void writetxt(string nombre,int nrogen,int amplitud) {
+    ofstream myfile;
+    myfile.open(nombre+".txt",ios::app);
+    myfile << nrogen<<","<<amplitud;
+    myfile.close();
+}
 
 int main() {
     int n = 10; // Número de nodos
