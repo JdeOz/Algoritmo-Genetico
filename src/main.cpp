@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <map>
 #include <random>
 #include <cmath>
 
@@ -26,7 +27,7 @@ vector<int> generateRandomIndividual() {
 
 // TODO: Distancia Euclidiana
 float Euclidean(Node a, Node b) {
-
+    
 }
 
 // TODO: Cálculo aptitud(sumar distancias)
@@ -61,15 +62,19 @@ vector<int> Crossover(const vector<int> &individual) {
 
 int main() {
     int n = 10; // Número de nodos
-    int k = 10; // Tamaños de la población
+
+    int p = 10; // Tamaños de la población
     int g = 100; // Número de generaciones
+    int cantEli = 2; // Cantidad Elitismo
+    int probCru = 70; // Probabilidad Cruzamiento
+    int probMut = 100 - probCru; // Probabilidad Mutación
 
     createRandom(n);
-    vector<vector<int>> generation;
 
     // Generación Población Inicial
-    generation.reserve(k);
-    for (int i = 0; i < k; i++) {
+    vector<vector<int>> generation;
+    generation.reserve(p);
+    for (int i = 0; i < p; i++) {
         generation.push_back(generateRandomIndividual());
     }
 
@@ -85,17 +90,50 @@ int main() {
         // Calcular la aptitud de cada individuo
         float fitnessValues[generation.size()];
         for (int ind = 0; i < generation.size(); ind++) {
-            fitnessValues[i] = 1/fitness(generation[i]);
+            fitnessValues[i] = 1 / fitness(generation[i]);
         }
 
         // Selección: Calcular valor esperado y valor Actual
         float media = average(fitnessValues, (int) generation.size());
-        int VA[generation.size()];//Valor Actual
+        multimap<int, vector<int>> VA;
         for (int ind = 0; i < generation.size(); ind++) {
-            VA[i] = (int) round(fitnessValues[i] / media);
+            VA.insert(pair<int, vector<int>>((int) round(fitnessValues[i] / media), generation[i]));
+        }
+
+        // Crear la nueva generación
+        vector<pair<int, vector<int>>> ordenados;
+        for(const auto& indi:VA){
+            if(indi.first>0){
+                ordenados.push_back(indi);
+            }
         }
 
         vector<vector<int>> newGen;
+        for (int j = 0; j < cantEli; j++) {
+            if (ordenados[j].first > 0) {
+                newGen.push_back(ordenados[j].second);
+                ordenados[j].first-=1;
+            }
+        }
+
+        int iter=0;
+        int crias=0;
+        while(iter<ordenados.size() and crias<probCru){
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+        // Aplicar operadores lógicos a options
+
         // TODO: Operadores genéticos
 
         generation = newGen;
