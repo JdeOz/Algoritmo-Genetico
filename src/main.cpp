@@ -38,9 +38,13 @@ float fitness(const vector<int>& individual) {
     return sum;
 }
 
-// TODO: Media
-float average(float fitnessValues[], int n) {
 
+float average(float fitnessValues[], int n) {
+    float sum = 0;
+    for (int i = 0; i < n; i++) {
+        sum = sum + fitnessValues[i];
+    }
+    return sum / n;
 }
 
 // TODO: Mutación Basada en Posición
