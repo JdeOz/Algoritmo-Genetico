@@ -27,7 +27,7 @@ vector<int> generateRandomIndividual() {
 
 // TODO: Distancia Euclidiana
 float Euclidean(Node a, Node b) {
-    
+
 }
 
 // TODO: Cálculo aptitud(sumar distancias)
@@ -56,7 +56,7 @@ vector<int> MBD(const vector<int> &individual) {
 }
 
 // TODO: Crossover de Orden
-vector<int> Crossover(const vector<int> &individual) {
+vector<int> Crossover(const vector<int> &individual1, const vector<int> &individual2) {
 
 }
 
@@ -66,8 +66,8 @@ int main() {
     int p = 10; // Tamaños de la población
     int g = 100; // Número de generaciones
     int cantEli = 2; // Cantidad Elitismo
-    int probCru = 70; // Probabilidad Cruzamiento
-    int probMut = 100 - probCru; // Probabilidad Mutación
+    int probCru = 70 / 100 * (p - cantEli); // Probabilidad Cruzamiento
+    int probMut = p - probCru; // Probabilidad Mutación
 
     createRandom(n);
 
@@ -102,35 +102,60 @@ int main() {
 
         // Crear la nueva generación
         vector<pair<int, vector<int>>> ordenados;
-        for(const auto& indi:VA){
-            if(indi.first>0){
+        for (const auto &indi: VA) {
+            if (indi.first > 0) {
                 ordenados.push_back(indi);
             }
         }
 
         vector<vector<int>> newGen;
-        for (int j = 0; j < cantEli; j++) {
-            if (ordenados[j].first > 0) {
-                newGen.push_back(ordenados[j].second);
-                ordenados[j].first-=1;
+        //Elitismo
+        int elite = 0;
+        int iter = 0;
+        while (!ordenados.empty() and elite < cantEli) {
+            newGen.push_back(ordenados[iter].second);
+            ordenados[iter].first--;
+            if (ordenados[iter].first == 0) {
+                ordenados.erase(ordenados.begin() + iter);
+            } else {
+                iter++;
+            }
+            elite++;
+        }
+
+        int crias = 0;
+        while (!ordenados.empty() and crias < probCru) {
+            int iter2 = 0;
+            int pares = 0;
+            int totalPares = ordenados[0].first;
+            while (pares < totalPares and crias < probCru) {
+                newGen.push_back(Crossover(ordenados[0].second, ordenados[iter2 + 1].second));
+                crias++;
+                ordenados[iter2 + 1].first--;
+                ordenados[0].first--;
+                if (ordenados[iter2 + 1].first == 0) {
+                    ordenados.erase(ordenados.begin() + iter);
+                } else {
+                    iter2++;
+                }
+                pares++;
+            }
+            if (ordenados[0].first == 0) {
+                ordenados.erase(ordenados.begin());
             }
         }
 
-        int iter=0;
-        int crias=0;
-        while(iter<ordenados.size() and crias<probCru){
-
+        int iter3 = 0;
+        int mutations = 0;
+        while (mutations < probMut) {
+            for (int j = 0; j < ordenados[iter3].first; j++) {
+                newGen.push_back(MBD(ordenados[iter3].second));
+                mutations++;
+                if (mutations >= probMut) {
+                    break;
+                }
+            }
         }
-
-
-
-
-
-
-
-
-
-
 
         // Aplicar operadores lógicos a options
 
