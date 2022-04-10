@@ -87,8 +87,40 @@ vector<int> MBO( vector<int> individual) {
 }
 
 // TODO: Mutación Basada en Desorden
-vector<int> MBD(const vector<int> &individual) {
-
+vector<int> MBD(vector<int> individual) {
+    uniform_int_distribution<int> randNode(0, individual.size());
+    int pos1;
+    do {
+        pos1 = randNode(mt);
+    } while (pos1 == 0 || pos1 >= individual.size() - 1);
+    cout << pos1 << endl;
+    int pos2;
+    do {
+        pos2 = randNode(mt);
+    } while (pos2 == 0 || pos2 >= individual.size() - 1 || pos2 == pos1);
+    cout << pos2 << endl;
+    int minval, maxval;
+    if (pos1 < pos2) {
+        minval = pos1;
+        maxval = pos2;
+    }
+    else {
+        minval = pos2;
+        maxval = pos1;
+    }
+    uniform_int_distribution<int> rn(0, 2);
+    if (rn(mt) == 0) {
+        cout << "m" << 0 << endl;
+        individual.insert(individual.begin() + minval, individual[maxval]);
+        individual.erase(individual.begin() + maxval + 1);
+    }
+    else {
+        cout <<"m"<< 1 << endl;
+        individual.insert(individual.begin() + maxval+1, individual[minval]);
+        individual.erase(individual.begin() + minval);
+    }
+    
+    return individual;
 }
 
 // TODO: Crossover de Orden
