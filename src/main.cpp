@@ -130,7 +130,7 @@ vector<int> Crossover(const vector<int> &individual) {
 void writetxt(string nombre,int nrogen,int amplitud) {
     ofstream myfile;
     myfile.open(nombre+".txt",ios::app);
-    myfile << nrogen<<","<<amplitud;
+    myfile << nrogen<<","<<amplitud<<"\n";
     myfile.close();
 }
 
