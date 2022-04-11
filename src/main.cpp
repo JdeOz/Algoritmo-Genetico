@@ -15,126 +15,225 @@ struct Node {
 vector<Node> nodes;
 int inicial;
 
-// TODO: Crear nodos random
+int randomInt(int ini, int fin) {
+    random_device rd;
+    mt19937 mt(rd());
+    uniform_int_distribution<int> randNode(ini, fin);
+    return randNode(mt);
+}
+
+// Crear nodos random
 void createRandom(int n) {
-
+    for (int i = 0; i < n; i++) {
+        Node newNode(randomInt(0, 100), randomInt(0, 100));
+        nodes.push_back(newNode);
+    }
 }
 
-// TODO: Generar población inicial
-vector<int> generateRandomIndividual() {
-    //No tomar en cuenta al nodo inicial
+// Generar población inicial
+vector<int> generateRandomIndividual(int n) {
+    vector<int> indices;
+    vector<int> individual;
+    indices.reserve(n);
+    for (int i = 0; i < n; i++) {
+        indices.push_back(i);
+    }
+    indices.erase(indices.begin() + inicial);
+    while (!indices.empty()) {
+        int x = randomInt(0, (int) indices.size() - 1);
+        individual.push_back(indices[x]);
+        indices.erase(indices.begin() + x);
+    }
+    return individual;
 }
 
-// TODO: Distancia Euclidiana
+// Distancia Euclidiana
 float Euclidean(Node a, Node b) {
-
+    auto distance = (float) sqrt((pow(a.x - b.x, 2) + pow(a.y - b.y, 2)));
+    return distance;
 }
 
-// TODO: Cálculo aptitud(sumar distancias)
+// Cálculo aptitud(sumar distancias)
 float fitness(const vector<int> &individual) {
-    //Tomar en cuenta que inicia y termina en el nodo inicial
+    float sum = Euclidean(nodes[inicial], nodes[individual[0]]);
+    for (int i = 0; i < individual.size() - 1; i++) {
+        sum = sum + Euclidean(nodes[individual[i]], nodes[individual[i + 1]]);
+    }
+    sum = sum + Euclidean(nodes[individual[individual.size() - 1]], nodes[inicial]);
+    return sum;
 }
 
 // TODO: Media
 float average(float fitnessValues[], int n) {
-
+    float sum = 0;
+    for (int i = 0; i < n; i++) {
+        sum = sum + fitnessValues[i];
+    }
+    return sum / (float) n;
 }
 
-// TODO: Mutación Basada en Posición
-vector<int> MBP(const vector<int> &individual) {
-
-}
-
-// TODO: Mutación Basada en Orden
-vector<int> MBO(const vector<int> &individual) {
-
-}
+//// TODO: Mutación Basada en Posición
+//vector<int> MBP(const vector<int> &individual) {
+//
+//}
+//
+//// TODO: Mutación Basada en Orden
+//vector<int> MBO(const vector<int> &individual) {
+//
+//}
 
 // TODO: Mutación Basada en Desorden
 vector<int> MBD(const vector<int> &individual) {
-
+    vector<int> mutated(individual.begin(), individual.end());
+    int ini = randomInt(0, (int) mutated.size() - 1);
+    int fin = randomInt(ini, (int) mutated.size() - 1);
+    for (int i = 0; i < (fin - ini) * 2; i++) {
+        int a = randomInt(ini, fin);
+        int b = randomInt(ini, fin);
+        int c = mutated[a];
+        mutated[a] = mutated[b];
+        mutated[b] = c;
+    }
+    return mutated;
 }
 
 // TODO: Crossover de Orden
-vector<int> Crossover(const vector<int> &individual1, const vector<int> &individual2) {
+void Crossover(vector<vector<int>> &gen, const vector<int> &individual1, const vector<int> &individual2) {
+    vector<int> hijo1(individual1.size(), -1);
+    vector<int> hijo2(individual2.size(), -1);
+    vector<int> visited1(individual1.size() + 1, 0);
+    vector<int> visited2(individual2.size() + 1, 0);
 
+//    vector<int> boleanos = {1, 1, 1, 1, 0, 0, 0, 0, 0, 0};
+
+    for (int i = 0; i < individual1.size(); i++) {
+        if (randomInt(0,1)) {
+            hijo1[i] = individual2[i];
+            visited1[individual2[i]] = 1;
+
+            hijo2[i] = individual1[i];
+            visited2[individual1[i]] = 1;
+        }
+    }
+
+    int iterHijo = 0;
+    for (int i: individual1) {
+        while (hijo1[iterHijo] != -1) {
+            iterHijo++;
+            if (iterHijo >= hijo1.size()) {
+                break;
+            }
+        }
+        if (!visited1[i]) {
+            hijo1[iterHijo] = i;
+            iterHijo++;
+        }
+    }
+
+    iterHijo = 0;
+    for (int i: individual2) {
+        while (hijo2[iterHijo] != -1) {
+            iterHijo++;
+            if (iterHijo >= hijo2.size()) {
+                break;
+            }
+        }
+        if (!visited2[i]) {
+            hijo2[iterHijo] = i;
+            visited2[i] = 1;
+        }
+    }
+    gen.push_back(hijo1);
+    gen.push_back(hijo2);
 }
 
 int main() {
-    int n = 10; // Número de nodos
-
-    int p = 10; // Tamaños de la población
-    int g = 100; // Número de generaciones
+    int n = 25; // Número de nodos
+    int p = 50; // Tamaños de la población
+    int g = 10000000; // Número de generaciones
     int cantEli = 2; // Cantidad Elitismo
-    int probCru = 70 / 100 * (p - cantEli); // Probabilidad Cruzamiento
+    int probCru = (int) round((p - cantEli) * 0.7); // Probabilidad Cruzamiento
     int probMut = p - probCru; // Probabilidad Mutación
 
     createRandom(n);
+
+    inicial = randomInt(0, n - 1);
 
     // Generación Población Inicial
     vector<vector<int>> generation;
     generation.reserve(p);
     for (int i = 0; i < p; i++) {
-        generation.push_back(generateRandomIndividual());
+        generation.push_back(generateRandomIndividual(n));
     }
 
     // Seleccionar nodo Inicial aleatorio
-    random_device rd;
-    mt19937 mt(rd());
-    uniform_int_distribution<int> randNode(0, n);
-    inicial = randNode(mt);
 
     // Algoritmo genético
     for (int i = 0; i < g; i++) {
 
         // Calcular la aptitud de cada individuo
         float fitnessValues[generation.size()];
-        for (int ind = 0; i < generation.size(); ind++) {
-            fitnessValues[i] = 1 / fitness(generation[i]);
+        for (int ind = 0; ind < generation.size(); ind++) {
+            fitnessValues[ind] = 1 / fitness(generation[ind]);
         }
 
         // Selección: Calcular valor esperado y valor Actual
         float media = average(fitnessValues, (int) generation.size());
-        multimap<int, vector<int>> VA;
-        for (int ind = 0; i < generation.size(); ind++) {
-            VA.insert(pair<int, vector<int>>((int) round(fitnessValues[i] / media), generation[i]));
+        multimap<float, vector<int>> VA;
+        for (int ind = 0; ind < generation.size(); ind++) {
+            VA.insert(pair<float, vector<int>>(fitnessValues[ind] / media, generation[ind]));
         }
+
+        auto best = VA.end();
+        best--;
+        if(i%1000==0){
+            cout << i << " " << 1/(best->first * media)<< "  " << media << endl;
+        }
+
 
         // Crear la nueva generación
         vector<pair<int, vector<int>>> ordenados;
+
+
         for (const auto &indi: VA) {
             if (indi.first > 0) {
-                ordenados.push_back(indi);
+                int cant = (int) round(indi.first);
+                ordenados.emplace_back(cant, indi.second);
             }
         }
+        reverse(ordenados.begin(), ordenados.end());
+
 
         vector<vector<int>> newGen;
-        //Elitismo
-        int elite = 0;
-        int iter = 0;
-        while (!ordenados.empty() and elite < cantEli) {
-            newGen.push_back(ordenados[iter].second);
-            ordenados[iter].first--;
-            if (ordenados[iter].first == 0) {
-                ordenados.erase(ordenados.begin() + iter);
-            } else {
-                iter++;
-            }
-            elite++;
-        }
+        // Elitismo
+        newGen.push_back(ordenados[0].second);
+        newGen.push_back(ordenados[1].second);
+//        int elite = 0;
+//        int iter = 0;
+//        while (!ordenados.empty() and elite < cantEli) {
+//            newGen.push_back(ordenados[iter].second);
+//            ordenados[iter].first--;
+//            if (ordenados[iter].first == 0) {
+//                ordenados.erase(ordenados.begin() + iter);
+//            } else {
+//                iter++;
+//            }
+//            elite++;
+//        }
 
+        // Operador de cria
         int crias = 0;
-        while (!ordenados.empty() and crias < probCru) {
+        while (!ordenados.empty() and crias < probCru - 1) {
             int iter2 = 0;
             int pares = 0;
             int totalPares = ordenados[0].first;
             while (pares < totalPares and crias < probCru) {
-                newGen.push_back(Crossover(ordenados[0].second, ordenados[iter2 + 1].second));
-                crias++;
+                Crossover(newGen, ordenados[0].second, ordenados[iter2 + 1].second);
+                crias += 2;
                 ordenados[iter2 + 1].first--;
                 ordenados[0].first--;
                 if (ordenados[iter2 + 1].first == 0) {
-                    ordenados.erase(ordenados.begin() + iter);
+                    ordenados.erase(ordenados.begin() + iter2);
                 } else {
                     iter2++;
                 }
@@ -145,9 +244,10 @@ int main() {
             }
         }
 
+        // Operador de mutación
         int iter3 = 0;
         int mutations = 0;
-        while (mutations < probMut) {
+        while (mutations < probMut - 1) {
             for (int j = 0; j < ordenados[iter3].first; j++) {
                 newGen.push_back(MBD(ordenados[iter3].second));
                 mutations++;
@@ -156,12 +256,6 @@ int main() {
                 }
             }
         }
-
-        // Aplicar operadores lógicos a options
-
-        // TODO: Operadores genéticos
-
         generation = newGen;
     }
-
 }
